@@ -1,5 +1,8 @@
 package app
 
+// get_details_mock serves as a mock instead of providing address of the details API.
+// I had not enough time to implement it in a proper way
+
 import (
 	"net/http"
 
@@ -16,6 +19,7 @@ func (s *Service) getSongDetail(song *storage.Song) error {
 	return nil
 }
 
+// not used though
 func (s *Service) handleGetSongDetails(c echo.Context) error {
 	songName := c.QueryParam("song")
 	groupName := c.QueryParam("group")

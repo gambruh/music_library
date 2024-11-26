@@ -1,3 +1,5 @@
+// package logging should implement the Logger interface for the service.
+// However, for the moment it just wraps and returns logrus.Logger
 package logging
 
 import (

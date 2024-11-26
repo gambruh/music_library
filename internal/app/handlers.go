@@ -13,8 +13,16 @@ func (s *Service) handleAPI(c echo.Context) error {
 	return c.String(http.StatusOK, "API endpoint reached")
 }
 
-// HandleGetSong retrieves a song based on the provided query parameters
-func (s *Service) handleGetSong(c echo.Context) error {
+// HandleGetSong godoc
+// @Summary Get song
+// @Description Get song details from the database using group name and song name
+// @ID get-song
+// @Produce json
+// @Success 200 {array} storage.Song
+// @Failure 400 {object} string "Song and group parameters are required"
+// @Failure 404 {object} string "Song not found"
+// @Router /api/getsong [post]
+func (s *Service) HandleGetSong(c echo.Context) error {
 	type reqbody struct {
 		Name  string `json:"song"`
 		Group string `json:"group"`
@@ -39,8 +47,16 @@ func (s *Service) handleGetSong(c echo.Context) error {
 	return c.JSON(http.StatusOK, song)
 }
 
-// HandleAddSong adds a new song to the database
-func (s *Service) handleAddSong(c echo.Context) error {
+// HandleAddSong godoc
+// @Summary Add song
+// @Description Add song to the database, using group and song name, fetching details from other API
+// @ID add-song
+// @Produce json
+// @Success 200 {array} string
+// @Failure 400 {object} string "Song and group parameters are required"
+// @Failure 500 {object} string "Failed to add song"
+// @Router /api/addsong [post]
+func (s *Service) HandleAddSong(c echo.Context) error {
 	var song storage.Song
 
 	ctx := c.Request().Context()
@@ -62,8 +78,16 @@ func (s *Service) handleAddSong(c echo.Context) error {
 	return c.JSON(http.StatusCreated, echo.Map{"message": "song added successfully"})
 }
 
-// HandleEditSong edits an existing song's details
-func (s *Service) handleEditSong(c echo.Context) error {
+// HandleEditSong godoc
+// @Summary Edit song
+// @Description Edit song details, using group and song to identify the database line, then text, link, releaseDate (of tape Date)
+// @ID edit-song
+// @Produce json
+// @Success 200 {array} string
+// @Failure 400 {object} string "Invalid request body or missing parameters"
+// @Failure 500 {object} string "failed to edit song"
+// @Router /api/editsong [post]
+func (s *Service) HandleEditSong(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	var song storage.Song
@@ -80,17 +104,27 @@ func (s *Service) handleEditSong(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{"message": "song edited successfully"})
 }
 
-// HandleDeleteSong deletes a song from the database
-func (s *Service) handleDeleteSong(c echo.Context) error {
-	songName := c.QueryParam("song")
-	groupName := c.QueryParam("group")
-	ctx := c.Request().Context()
+// HandleDeleteSong
+// @Summary Delete song
+// @Description Deletes a song from the database, using song name and group name to identify it
+// @ID del-song
+// @Produce json
+// @Success 200 {array} string
+// @Failure 400 {object} string "Invalid request body or missing parameters"
+// @Failure 500 {object} string "Failed to delete song"
+// @Router /api/delsong [post]
+func (s *Service) HandleDeleteSong(c echo.Context) error {
 
-	if songName == "" || groupName == "" {
+	ctx := c.Request().Context()
+	var song storage.Song
+	if err := c.Bind(&song); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": "invalid request body"})
+	}
+	if song.Name == "" || song.Group == "" {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "song and group parameters are required"})
 	}
 
-	err := s.Storage.DeleteSong(ctx, groupName, songName)
+	err := s.Storage.DeleteSong(ctx, song.Group, song.Name)
 	if err != nil {
 		s.Logger.Error("failed to delete song: %w", err)
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": "failed to delete song"})

@@ -1,3 +1,4 @@
+// package app implements logic, http server and handlers
 package app
 
 import (

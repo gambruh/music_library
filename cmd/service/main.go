@@ -3,7 +3,6 @@
 // - get song from the database
 // - edit song details in the database
 // - delete song from the database
-
 package main
 
 import (
@@ -47,12 +46,12 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	}
 
 	// initialize connection to the database
-	db, err := storage.GetDB()
+	db, err := storage.GetDB(cfg.GetDatabaseConnStr())
 	if err != nil {
 		return err
 	}
 
-	err = db.CheckConn()
+	err = db.CheckConn(cfg.GetDatabaseConnStr())
 	if err != nil {
 		return fmt.Errorf("can't connect to the database: %w", err)
 	}
@@ -71,6 +70,11 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	return nil
 }
 
+// @title Echo API
+// @version 1.0
+// @description API documentation for your Echo app
+// @host localhost:8080
+// @BasePath /api
 func main() {
 	ctx := context.Background()
 	if err := run(ctx, os.Stdout, os.Args); err != nil {

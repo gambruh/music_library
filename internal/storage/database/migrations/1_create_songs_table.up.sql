@@ -1,14 +1,15 @@
-CREATE TABLE artists (
+CREATE TABLE groups (
     id SERIAL PRIMARY KEY,
-    artist_name VARCHAR(255) NOT NULL,
+    group_name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE songs (
     id SERIAL PRIMARY KEY,
-    group_name VARCHAR(255) NOT NULL,
+    group_id INT NOT NULL,
     song_name VARCHAR(255) NOT NULL,
     release_date DATE,
     lyrics TEXT,
     link TEXT,
-    FOREIGN KEY (artist_id) REFERENCES artists(id) ON DELETE CASCADE
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    CONSTRAINT unique_song_group UNIQUE (song_name, group_id)
 );

@@ -35,10 +35,10 @@ func NewSQLdb(postgresStr string) (*SQLdb, error) {
 }
 
 // function GetDB() returns database which implements Storage interface
-func GetDB() (*SQLdb, error) {
-	dbURL := os.Getenv("MUSIC_DATABASE_STRING")
+func GetDB(database_str string) (*SQLdb, error) {
+	// database_str := os.Getenv("MUSIC_DATABASE_STRING")
 
-	db, err := NewSQLdb(dbURL)
+	db, err := NewSQLdb(database_str)
 	if err != nil {
 		return nil, err
 	}
@@ -52,13 +52,11 @@ func GetDB() (*SQLdb, error) {
 }
 
 // function to ping the db
-func (s *SQLdb) CheckConn() error {
-	dbURL := os.Getenv("MUSIC_DATABASE_STRING")
+func (s *SQLdb) CheckConn(database_str string) error {
+	// database_str := os.Getenv("MUSIC_DATABASE_STRING")
 
 	// dbURL = "user=postgres password=postgres host=postgres port=5432 dbname=music_library sslmode=disable"
-
-	fmt.Println("FROM CHECKCONNL:", dbURL)
-	db, err := sql.Open("pgx", dbURL)
+	db, err := sql.Open("pgx", database_str)
 	if err != nil {
 		return err
 	}
@@ -110,18 +108,50 @@ func (s *SQLdb) InitDatabase() error {
 func (s *SQLdb) AddSong(ctx context.Context, song *storage.Song) error {
 	// Get query parameters
 	group := song.Group
-	song_name := song.Name
+	songName := song.Name
 	lyrics := song.Text
 	link := song.Link
 	releaseDate := song.ReleaseDate
 
 	// Execute the add song query
-	_, err := s.DB.ExecContext(ctx, ADD_SONG_QUERY, group, song_name, releaseDate, lyrics, link)
+	tx, err := s.DB.Begin()
 	if err != nil {
-		return fmt.Errorf("failed to add song: %w", err)
+		return err
 	}
 
-	return nil
+	// var groupID int
+	_, err = tx.Exec(
+		ADD_GROUP_QUERY,
+		group,
+	)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	// if err != nil {
+	// 	// Artist already exists, fetch their ID
+	// 	err = tx.QueryRow(
+	// 		GET_GROUP_ID_QUERY,
+	// 		group,
+	// 	).Scan(&groupID)
+	// 	if err != nil {
+	// 		tx.Rollback()
+	// 		return err
+	// 	}
+	// }
+
+	// Add the song
+	_, err = tx.Exec(
+		ADD_SONG_QUERY,
+		group, songName, releaseDate, lyrics, link,
+	)
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit()
 }
 
 func (s *SQLdb) GetSong(ctx context.Context, groupName, songName string) (*storage.Song, error) {
