@@ -47,21 +47,23 @@ func run(ctx context.Context, w io.Writer, args []string) error {
 	}
 
 	// initialize connection to the database
-	db, err := storage.GetDB(cfg.GetDatabaseConnStr())
+	db, err := storage.GetDB()
 	if err != nil {
 		return err
+	}
+
+	err = db.CheckConn()
+	if err != nil {
+		return fmt.Errorf("can't connect to the database: %w", err)
 	}
 
 	// init a music library server
 	s := app.NewService(logger, cfg, db)
 
-	// Use a goroutine to start the music library server
-	go func() {
-		if err := s.Start(); err != nil && err != http.ErrServerClosed {
-			fmt.Fprintf(w, "Failed to start server: %v\n", err)
-			cancel() // Cancel the context to stop the app
-		}
-	}()
+	if err := s.Start(); err != nil && err != http.ErrServerClosed {
+		defer cancel() // Cancel the context to stop the app
+		return fmt.Errorf("failed to start server: %w", err)
+	}
 
 	// Wait for the context to be canceled (on interrupt)
 	<-ctx.Done()
