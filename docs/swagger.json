@@ -1,0 +1,167 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API documentation for your Echo app",
+        "title": "Echo API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api",
+    "paths": {
+        "/api/addsong": {
+            "post": {
+                "description": "Add song to the database, using group and song name, fetching details from other API",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Add song",
+                "operationId": "add-song",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Song and group parameters are required",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to add song",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/delsong": {
+            "post": {
+                "description": "Deletes a song from the database, using song name and group name to identify it",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete song",
+                "operationId": "del-song",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or missing parameters",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Failed to delete song",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/editsong": {
+            "post": {
+                "description": "Edit song details, using group and song to identify the database line, then text, link, releaseDate (of tape Date)",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Edit song",
+                "operationId": "edit-song",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or missing parameters",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "failed to edit song",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/getsong": {
+            "post": {
+                "description": "Get song details from the database using group name and song name",
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get song",
+                "operationId": "get-song",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/storage.Song"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Song and group parameters are required",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Song not found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "storage.Song": {
+            "type": "object",
+            "properties": {
+                "group": {
+                    "type": "string"
+                },
+                "link": {
+                    "type": "string"
+                },
+                "releaseDate": {
+                    "type": "string"
+                },
+                "song": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

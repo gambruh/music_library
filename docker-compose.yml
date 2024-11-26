@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    container_name: music_library_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: music_library
+    # volumes:
+      # - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+  music_library:
+    image: music_library
+    container_name: music_library_app
+    environment:
+      MUSIC_ADDRESS: ":8080"
+      MUSIC_DATABASE_URL: pgx://postgres:postgres@postgres:5432/music_library?sslmode=disable
+      MUSIC_DATABASE_STRING: "user=postgres password=postgres host=postgres port=5432 dbname=music_library sslmode=disable"
+      DETAILS_API_ADDRESS: host.docker.internal:8081
+    ports:
+      - "8080:8080"
+    depends_on: 
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
